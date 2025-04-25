@@ -1,0 +1,12 @@
+Scaffold-DbContext -Connection "Host=loma;Port=5432;Database=nora;Username=xxx;Password=xxx" Npgsql.EntityFrameworkCore.PostgreSQL -OutputDir Entity -Context DbModelContext -Tables resume.resume_customer, resume.resume_grad_his –NoPluralize -f -NoOnConfiguring
+
+# มีปัญหาการสร้าง Entity Framework Core DbContext และ Model Class จาก PostgreSQL คือ หาไฟล์ไม่เจอ [FileName: AspireApp1.ApiService.dll || Model.dll]
+
+# การ Scaffold
+Req Nuget Backend
+	- Microsoft.EntityFrameworkCore [1] [AppHost, ApiService, Model]
+	- Microsoft.EntityFrameworkCore.Tools [2] [AppHost]
+	- Npgsql.EntityFrameworkCore.PostgreSQL [DB] [3] [AppHost, ApiService, Model]
+	*** แนนำว่า [1] [2] [3] เวอร์ชั่นเดียวกัน (ตัวหน้า สำคัญ) 
+
+# create Controllers, IServices And Services Filders
