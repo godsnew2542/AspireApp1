@@ -1,0 +1,113 @@
+﻿using AspireApp1.ApiService.IServices;
+using Microsoft.EntityFrameworkCore;
+using Model.Entity;
+
+namespace AspireApp1.ApiService.Services;
+
+public class ConnectDbService(IDbContextFactory<DbModelContext> context) : IConnectDbService
+{
+    public async Task<List<ResumeCustomer>> GetAllResumeCustomer()
+    {
+        using var dbcontext = await context.CreateDbContextAsync();
+
+        try
+        {
+            return await dbcontext.ResumeCustomer
+                .Select(x => new ResumeCustomer()
+                {
+                    CusNameTh = x.CusNameTh,
+                })
+                .OrderBy(x => x.CusNameTh)
+                .ThenBy(x => x.CusPid)
+                .Take(500)
+                .ToListAsync();
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+
+    public async Task<ResumeCustomer?> GetResumeCustomerById(string? id)
+    {
+        using var dbcontext = await context.CreateDbContextAsync();
+        try
+        {
+            return await dbcontext.ResumeCustomer
+                .Where(c => c.CusPid == id)
+                .Select(x => new ResumeCustomer()
+                {
+                    CusNameTh = x.CusNameTh,
+                })
+                .FirstOrDefaultAsync();
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+
+    public async Task<ResumeCustomer?> AddResumeCustomer(ResumeCustomer resumeCustomer)
+    {
+        using var dbcontext = await context.CreateDbContextAsync();
+        using var trans = await dbcontext.Database.BeginTransactionAsync();
+
+        try
+        {
+            await dbcontext.ResumeCustomer.AddRangeAsync(resumeCustomer);
+            await dbcontext.SaveChangesAsync();
+            await trans.CommitAsync();
+            return resumeCustomer;
+        }
+        catch (Exception)
+        {
+            await trans.RollbackAsync();
+            throw;
+        }
+    }
+
+    public async Task UpdateResumeCustomer(ResumeCustomer resumeCustomer)
+    {
+        using var dbcontext = await context.CreateDbContextAsync();
+        using var trans = await dbcontext.Database.BeginTransactionAsync();
+
+        try
+        {
+            dbcontext.ResumeCustomer.Update(resumeCustomer);
+            await dbcontext.SaveChangesAsync();
+            await trans.CommitAsync();
+        }
+        catch (Exception)
+        {
+            await trans.RollbackAsync();
+            throw;
+        }
+    }
+
+    public async Task<bool> DeleteResumeCustomerById(string? id)
+    {
+        using var dbcontext = await context.CreateDbContextAsync();
+        using var trans = await dbcontext.Database.BeginTransactionAsync();
+
+        try
+        {
+            ResumeCustomer? temp = await dbcontext.ResumeCustomer
+                .Where(c => c.CusPid == id)
+                .FirstOrDefaultAsync();
+            if (temp == null)
+            {
+                return false;
+            }
+
+            dbcontext.ResumeCustomer.RemoveRange(temp);
+            await dbcontext.SaveChangesAsync();
+            await trans.CommitAsync();
+            return true;
+        }
+        catch (Exception)
+        {
+            await trans.RollbackAsync();
+            throw;
+        }
+    }
+}

@@ -51,13 +51,14 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddDbContextFactory<DbModelContext>(options =>
 {
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
-    options.EnableSensitiveDataLogging(true);
 });
 
 #endregion
 
+#region AddScoped
+builder.Services.AddScoped<IConnectDbService, ConnectDbService>();
 
-builder.Services.AddScoped<IConnectDb, ConnectDb>();
+#endregion
 
 
 var app = builder.Build();
@@ -80,6 +81,7 @@ if (app.Environment.IsDevelopment())
     #endregion
 }
 
+#region ...
 string[] summaries = ["Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"];
 
 app.MapGet("/weatherforecast", () =>
@@ -96,8 +98,14 @@ app.MapGet("/weatherforecast", () =>
 })
 .WithName("GetWeatherForecast");
 
+#endregion
+
 app.MapDefaultEndpoints();
+
+#region Add on
 app.MapControllers();
+
+#endregion
 
 app.Run();
 
