@@ -14,7 +14,8 @@ public class ApiController(IConnectDbService connectDb) : ControllerBase
     {
         try
         {
-            List<ResumeCustomer> result = await connectDb.GetAllResumeCustomer();
+            //List<ResumeCustomer> result = await connectDb.GetAllResumeCustomer();
+            List<ResumeCustomer> result = new();
             return Ok(result);
         }
         catch (Exception ex)
@@ -29,7 +30,8 @@ public class ApiController(IConnectDbService connectDb) : ControllerBase
     {
         try
         {
-            ResumeCustomer? result = await connectDb.GetResumeCustomerById(id);
+            //ResumeCustomer? result = await connectDb.GetResumeCustomerById(id);
+            ResumeCustomer? result = new();
             return Ok(result);
         }
         catch (Exception ex)
@@ -44,12 +46,12 @@ public class ApiController(IConnectDbService connectDb) : ControllerBase
     {
         try
         {
-            ResumeCustomer? result = await connectDb.AddResumeCustomer(resume);
+            //ResumeCustomer? result = await connectDb.AddResumeCustomer(resume);
+            ResumeCustomer? result = new();
             return Ok(result);
         }
         catch (Exception ex)
         {
-            // Log the error here if you want
             return StatusCode(500, $"Internal server error: {ex.Message}");
         }
     }
@@ -60,12 +62,11 @@ public class ApiController(IConnectDbService connectDb) : ControllerBase
     {
         try
         {
-            await connectDb.UpdateResumeCustomer(resume);
+            //await connectDb.UpdateResumeCustomer(resume);
             return Ok();
         }
         catch (Exception ex)
         {
-            // Log the error here if you want
             return StatusCode(500, $"Internal server error: {ex.Message}");
         }
     }
@@ -80,12 +81,11 @@ public class ApiController(IConnectDbService connectDb) : ControllerBase
         }
         try
         {
-            await connectDb.DeleteResumeCustomerById(id);
+            //await connectDb.DeleteResumeCustomerById(id);
             return Ok();
         }
         catch (Exception ex)
         {
-            // Log the error here if you want
             return StatusCode(500, $"Internal server error: {ex.Message}");
         }
     }

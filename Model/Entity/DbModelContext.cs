@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 
 namespace Model.Entity;
 
@@ -9,324 +11,303 @@ public partial class DbModelContext : DbContext
     {
     }
 
-    public virtual DbSet<ResumeCustomer> ResumeCustomer { get; set; }
+    public virtual DbSet<AssetCategories> AssetCategories { get; set; }
 
-    public virtual DbSet<ResumeGradHis> ResumeGradHis { get; set; }
+    public virtual DbSet<Assets> Assets { get; set; }
+
+    public virtual DbSet<Departments> Departments { get; set; }
+
+    public virtual DbSet<MaintenanceLogs> MaintenanceLogs { get; set; }
+
+    public virtual DbSet<Supplies> Supplies { get; set; }
+
+    public virtual DbSet<SupplyRequestItems> SupplyRequestItems { get; set; }
+
+    public virtual DbSet<SupplyRequests> SupplyRequests { get; set; }
+
+    public virtual DbSet<SupplyTransactions> SupplyTransactions { get; set; }
+
+    public virtual DbSet<Users> Users { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder
-            .HasPostgresExtension("oracle_fdw")
-            .HasPostgresExtension("pg_stat_statements")
-            .HasPostgresExtension("postgres_fdw")
-            .HasPostgresExtension("system_stats")
-            .HasPostgresExtension("uuid-ossp");
-
-        modelBuilder.Entity<ResumeCustomer>(entity =>
+        modelBuilder.Entity<AssetCategories>(entity =>
         {
-            entity.HasKey(e => e.CusPid).HasName("resume_customer_pkey");
+            entity.HasKey(e => e.Id).HasName("asset_categories_pkey");
 
-            entity.ToTable("resume_customer", "resume", tb => tb.HasComment("เก็บข้อมูลผู้ลงทะเบียนทั้งหมด"));
+            entity.ToTable("asset_categories", "training", tb => tb.HasComment("ตารางประเภทของครุภัณฑ์"));
 
-            entity.Property(e => e.CusPid)
-                .HasMaxLength(26)
-                .HasComment("เลขที่บัตรประชาชน")
-                .HasColumnName("cus_pid");
-            entity.Property(e => e.BirthCountry)
-                .HasMaxLength(10)
-                .HasColumnName("birth_country");
-            entity.Property(e => e.CusBirthDate)
-                .HasMaxLength(16)
-                .HasComment("วันเดือนปีเกิดอยู่ในรูป DDMMYYYY (Y=ปี พ.ศ.)")
-                .HasColumnName("cus_birth_date");
-            entity.Property(e => e.CusBirthProv)
-                .HasMaxLength(4)
-                .HasComment("รหัสจังหวัดที่เกิด")
-                .HasColumnName("cus_birth_prov");
-            entity.Property(e => e.CusBloodGroup)
-                .HasMaxLength(40)
-                .HasComment("กรุ๊ปเลือด")
-                .HasColumnName("cus_blood_group");
-            entity.Property(e => e.CusNameEn)
-                .HasMaxLength(90)
-                .HasComment("ชื่อภาษาอังกฤษ")
-                .HasColumnName("cus_name_en");
-            entity.Property(e => e.CusNameTh)
-                .HasMaxLength(80)
-                .HasComment("ชื่อภาษาไทย")
-                .HasColumnName("cus_name_th");
-            entity.Property(e => e.CusSnameEn)
-                .HasMaxLength(90)
-                .HasComment("นามสกุลภาษาอังกฤษ")
-                .HasColumnName("cus_sname_en");
-            entity.Property(e => e.CusSnameTh)
-                .HasMaxLength(80)
-                .HasComment("นามสกุลภาษาไทย")
-                .HasColumnName("cus_sname_th");
+            entity.Property(e => e.Id)
+                .HasComment("รหัสประเภท")
+                .HasColumnName("id");
+            entity.Property(e => e.DepreciationRate)
+                .HasPrecision(5, 2)
+                .HasComment("อัตราค่าเสื่อมราคา (% ต่อปี)")
+                .HasColumnName("depreciation_rate");
+            entity.Property(e => e.Name)
+                .HasComment("ชื่อประเภท เช่น คอมพิวเตอร์")
+                .HasColumnName("name");
+        });
+
+        modelBuilder.Entity<Assets>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("assets_pkey");
+
+            entity.ToTable("assets", "training", tb => tb.HasComment("ตารางเก็บข้อมูลครุภัณฑ์"));
+
+            entity.HasIndex(e => e.AssetCode, "assets_asset_code_key").IsUnique();
+
+            entity.Property(e => e.Id)
+                .HasComment("รหัสครุภัณฑ์")
+                .HasColumnName("id");
+            entity.Property(e => e.AssetCode)
+                .HasComment("หมายเลขครุภัณฑ์ (รหัสทรัพย์สิน)")
+                .HasColumnName("asset_code");
+            entity.Property(e => e.CategoryId)
+                .HasComment("อ้างอิงประเภทครุภัณฑ์")
+                .HasColumnName("category_id");
+            entity.Property(e => e.CurrentValue)
+                .HasPrecision(12, 2)
+                .HasComment("มูลค่าปัจจุบัน (หลังค่าเสื่อม)")
+                .HasColumnName("current_value");
+            entity.Property(e => e.DepartmentId)
+                .HasComment("หน่วยงานผู้ถือครอง")
+                .HasColumnName("department_id");
+            entity.Property(e => e.Location)
+                .HasComment("ตำแหน่งที่จัดเก็บ")
+                .HasColumnName("location");
+            entity.Property(e => e.Name)
+                .HasComment("ชื่อครุภัณฑ์")
+                .HasColumnName("name");
+            entity.Property(e => e.Price)
+                .HasPrecision(12, 2)
+                .HasComment("ราคาจัดซื้อ")
+                .HasColumnName("price");
+            entity.Property(e => e.PurchaseDate)
+                .HasComment("วันที่จัดซื้อ")
+                .HasColumnName("purchase_date");
+            entity.Property(e => e.Status)
+                .HasComment("สถานะของครุภัณฑ์")
+                .HasColumnName("status");
+            entity.Property(e => e.UserId)
+                .HasComment("ผู้รับผิดชอบครุภัณฑ์")
+                .HasColumnName("user_id");
+            entity.Property(e => e.WarrantyExpiry)
+                .HasComment("วันหมดประกัน")
+                .HasColumnName("warranty_expiry");
+
+            entity.HasOne(d => d.Category).WithMany(p => p.Assets)
+                .HasForeignKey(d => d.CategoryId)
+                .HasConstraintName("assets_category_id_fkey");
+
+            entity.HasOne(d => d.Department).WithMany(p => p.Assets)
+                .HasForeignKey(d => d.DepartmentId)
+                .HasConstraintName("assets_department_id_fkey");
+
+            entity.HasOne(d => d.User).WithMany(p => p.Assets)
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("assets_user_id_fkey");
+        });
+
+        modelBuilder.Entity<Departments>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("departments_pkey");
+
+            entity.ToTable("departments", "training", tb => tb.HasComment("ตารางเก็บข้อมูลหน่วยงาน/แผนก"));
+
+            entity.Property(e => e.Id)
+                .HasComment("รหัสแผนก (PK)")
+                .HasColumnName("id");
+            entity.Property(e => e.Location)
+                .HasComment("สถานที่ตั้งของแผนก")
+                .HasColumnName("location");
+            entity.Property(e => e.Name)
+                .HasComment("ชื่อแผนก เช่น ฝ่าย IT")
+                .HasColumnName("name");
+        });
+
+        modelBuilder.Entity<MaintenanceLogs>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("maintenance_logs_pkey");
+
+            entity.ToTable("maintenance_logs", "training", tb => tb.HasComment("ตารางบันทึกประวัติการซ่อมครุภัณฑ์"));
+
+            entity.Property(e => e.Id)
+                .HasComment("รหัสรายการซ่อม")
+                .HasColumnName("id");
+            entity.Property(e => e.AssetId)
+                .HasComment("อ้างอิงครุภัณฑ์ที่ซ่อม")
+                .HasColumnName("asset_id");
+            entity.Property(e => e.Cost)
+                .HasPrecision(12, 2)
+                .HasComment("ค่าซ่อม")
+                .HasColumnName("cost");
+            entity.Property(e => e.Description)
+                .HasComment("รายละเอียดการซ่อม")
+                .HasColumnName("description");
+            entity.Property(e => e.RepairDate)
+                .HasComment("วันที่ซ่อม")
+                .HasColumnName("repair_date");
+            entity.Property(e => e.ReportedBy)
+                .HasComment("ผู้แจ้งซ่อม")
+                .HasColumnName("reported_by");
+            entity.Property(e => e.Status)
+                .HasComment("สถานะการซ่อม")
+                .HasColumnName("status");
+
+            entity.HasOne(d => d.Asset).WithMany(p => p.MaintenanceLogs)
+                .HasForeignKey(d => d.AssetId)
+                .HasConstraintName("maintenance_logs_asset_id_fkey");
+
+            entity.HasOne(d => d.ReportedByNavigation).WithMany(p => p.MaintenanceLogs)
+                .HasForeignKey(d => d.ReportedBy)
+                .HasConstraintName("maintenance_logs_reported_by_fkey");
+        });
+
+        modelBuilder.Entity<Supplies>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("supplies_pkey");
+
+            entity.ToTable("supplies", "training", tb => tb.HasComment("ตารางเก็บรายการพัสดุสิ้นเปลือง"));
+
+            entity.Property(e => e.Id)
+                .HasComment("รหัสพัสดุ")
+                .HasColumnName("id");
+            entity.Property(e => e.Name)
+                .HasComment("ชื่อพัสดุ")
+                .HasColumnName("name");
+            entity.Property(e => e.ReorderPoint)
+                .HasDefaultValue(10)
+                .HasComment("ระดับแจ้งเตือนสั่งซื้อใหม่")
+                .HasColumnName("reorder_point");
+            entity.Property(e => e.StockQuantity)
+                .HasDefaultValue(0)
+                .HasComment("จำนวนคงเหลือ")
+                .HasColumnName("stock_quantity");
+            entity.Property(e => e.Unit)
+                .HasComment("หน่วยนับ เช่น ชิ้น, กล่อง")
+                .HasColumnName("unit");
+        });
+
+        modelBuilder.Entity<SupplyRequestItems>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("supply_request_items_pkey");
+
+            entity.ToTable("supply_request_items", "training", tb => tb.HasComment("รายการพัสดุที่แนบในใบเบิก"));
+
+            entity.Property(e => e.Id)
+                .HasComment("รหัสรายการ")
+                .HasColumnName("id");
+            entity.Property(e => e.Quantity)
+                .HasComment("จำนวนที่ขอเบิก")
+                .HasColumnName("quantity");
+            entity.Property(e => e.RequestId)
+                .HasComment("อ้างอิงใบเบิก")
+                .HasColumnName("request_id");
+            entity.Property(e => e.SupplyId)
+                .HasComment("พัสดุที่ขอเบิก")
+                .HasColumnName("supply_id");
+
+            entity.HasOne(d => d.Request).WithMany(p => p.SupplyRequestItems)
+                .HasForeignKey(d => d.RequestId)
+                .HasConstraintName("supply_request_items_request_id_fkey");
+
+            entity.HasOne(d => d.Supply).WithMany(p => p.SupplyRequestItems)
+                .HasForeignKey(d => d.SupplyId)
+                .HasConstraintName("supply_request_items_supply_id_fkey");
+        });
+
+        modelBuilder.Entity<SupplyRequests>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("supply_requests_pkey");
+
+            entity.ToTable("supply_requests", "training", tb => tb.HasComment("ตารางเก็บใบขอเบิกพัสดุ"));
+
+            entity.Property(e => e.Id)
+                .HasComment("รหัสใบขอเบิก")
+                .HasColumnName("id");
+            entity.Property(e => e.RequestDate)
+                .HasDefaultValueSql("CURRENT_DATE")
+                .HasComment("วันที่ขอเบิก")
+                .HasColumnName("request_date");
+            entity.Property(e => e.RequestedBy)
+                .HasComment("ผู้ขอเบิก")
+                .HasColumnName("requested_by");
+            entity.Property(e => e.Status)
+                .HasComment("สถานะใบเบิก")
+                .HasColumnName("status");
+
+            entity.HasOne(d => d.RequestedByNavigation).WithMany(p => p.SupplyRequests)
+                .HasForeignKey(d => d.RequestedBy)
+                .HasConstraintName("supply_requests_requested_by_fkey");
+        });
+
+        modelBuilder.Entity<SupplyTransactions>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("supply_transactions_pkey");
+
+            entity.ToTable("supply_transactions", "training", tb => tb.HasComment("บันทึกการรับ/จ่ายพัสดุ"));
+
+            entity.Property(e => e.Id)
+                .HasComment("รหัสรายการ")
+                .HasColumnName("id");
+            entity.Property(e => e.PerformedBy)
+                .HasComment("ผู้ดำเนินการ")
+                .HasColumnName("performed_by");
+            entity.Property(e => e.Quantity)
+                .HasComment("จำนวนที่รับ/จ่าย")
+                .HasColumnName("quantity");
+            entity.Property(e => e.Reference)
+                .HasComment("อ้างอิง เช่น เลขใบเบิกหรือสั่งซื้อ")
+                .HasColumnName("reference");
+            entity.Property(e => e.SupplyId)
+                .HasComment("พัสดุที่มีการเคลื่อนไหว")
+                .HasColumnName("supply_id");
+            entity.Property(e => e.TransactionDate)
+                .HasDefaultValueSql("CURRENT_DATE")
+                .HasComment("วันที่ทำรายการ")
+                .HasColumnName("transaction_date");
+            entity.Property(e => e.TransactionType)
+                .HasComment("ประเภท: in (รับ), out (จ่าย)")
+                .HasColumnName("transaction_type");
+
+            entity.HasOne(d => d.PerformedByNavigation).WithMany(p => p.SupplyTransactions)
+                .HasForeignKey(d => d.PerformedBy)
+                .HasConstraintName("supply_transactions_performed_by_fkey");
+
+            entity.HasOne(d => d.Supply).WithMany(p => p.SupplyTransactions)
+                .HasForeignKey(d => d.SupplyId)
+                .HasConstraintName("supply_transactions_supply_id_fkey");
+        });
+
+        modelBuilder.Entity<Users>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("users_pkey");
+
+            entity.ToTable("users", "training", tb => tb.HasComment("ตารางเก็บข้อมูลผู้ใช้งานระบบ"));
+
+            entity.HasIndex(e => e.Email, "users_email_key").IsUnique();
+
+            entity.Property(e => e.Id)
+                .HasComment("รหัสผู้ใช้งาน")
+                .HasColumnName("id");
+            entity.Property(e => e.DepartmentId)
+                .HasComment("อ้างอิงแผนกที่สังกัด")
+                .HasColumnName("department_id");
             entity.Property(e => e.Email)
-                .HasMaxLength(80)
-                .HasComment("อีเมล")
+                .HasComment("อีเมล (ใช้ล็อกอิน)")
                 .HasColumnName("email");
-            entity.Property(e => e.ExpiredDate)
-                .HasMaxLength(16)
-                .HasColumnName("expired_date");
-            entity.Property(e => e.ImgFilePath)
-                .HasMaxLength(200)
-                .HasColumnName("img_file_path");
-            entity.Property(e => e.InterestPosition)
-                .HasMaxLength(40)
-                .HasComment("ตำแหน่งที่สนใจสมัคร")
-                .HasColumnName("interest_position");
-            entity.Property(e => e.LectFlag)
-                .HasMaxLength(20)
-                .HasColumnName("lect_flag");
-            entity.Property(e => e.LecturerDate)
-                .HasMaxLength(16)
-                .HasColumnName("lecturer_date");
-            entity.Property(e => e.MajorSpecId)
-                .HasMaxLength(40)
-                .HasColumnName("major_spec_id");
-            entity.Property(e => e.MaritalStatus)
-                .HasMaxLength(2)
-                .HasComment("รหัสสถานะภาพสมรส ")
-                .HasColumnName("marital_status");
-            entity.Property(e => e.MilitaryStatus)
-                .HasMaxLength(2)
-                .HasColumnName("military_status");
-            entity.Property(e => e.Mobile)
-                .HasMaxLength(20)
-                .HasComment("เบอร์โทรศัพท์มือถือ ")
-                .HasColumnName("mobile");
-            entity.Property(e => e.ModifiedDate)
-                .HasMaxLength(16)
-                .HasComment("วันที่เวลาปรับปรุงข้อมูลล่าสุด")
-                .HasColumnName("modified_date");
-            entity.Property(e => e.NationId)
-                .HasMaxLength(6)
-                .HasComment("สัญชาติ")
-                .HasColumnName("nation_id");
-            entity.Property(e => e.Password)
-                .HasMaxLength(60)
-                .HasColumnName("password");
-            entity.Property(e => e.PosLectId)
-                .HasMaxLength(20)
-                .HasColumnName("pos_lect_id");
-            entity.Property(e => e.PublicProfile)
-                .HasMaxLength(2)
-                .HasComment("0 ไม่แผ่ยเแพร่ || 1 แผ่ยแพร่")
-                .HasColumnName("public_profile");
-            entity.Property(e => e.RaceId)
-                .HasMaxLength(4)
-                .HasComment("เชื้อชาติ")
-                .HasColumnName("race_id");
-            entity.Property(e => e.RecruitedBy)
-                .HasMaxLength(4)
-                .HasComment("รหัสหน่วยงานที่รับเข้าทำงานแล้ว")
-                .HasColumnName("recruited_by");
-            entity.Property(e => e.RecruitedDate)
-                .HasMaxLength(16)
-                .HasComment("วันเดือนปีที่มีหน่วยงานรับเข้าทำงาน")
-                .HasColumnName("recruited_date");
-            entity.Property(e => e.RefPerson)
-                .HasMaxLength(2000)
-                .HasComment("บุคคลอ้างอิง")
-                .HasColumnName("ref_person");
-            entity.Property(e => e.RegistDate)
-                .HasMaxLength(16)
-                .HasComment("วันเดือนปีที่สมัครDDMMYYYY (Y=ปี พ.ศ.)")
-                .HasColumnName("regist_date");
-            entity.Property(e => e.ReligionId)
-                .HasMaxLength(2)
-                .HasComment("รหัสศาสนา ")
-                .HasColumnName("religion_id");
-            entity.Property(e => e.SexId)
-                .HasMaxLength(2)
-                .HasComment("รหัสเพศ (1=ชาย,2=หญิง)")
-                .HasColumnName("sex_id");
-            entity.Property(e => e.TitleId)
-                .HasMaxLength(2)
-                .HasComment("รหัสคำนำหน้าชื่อ(01=นาย,02=นางสาว,03=นาง)")
-                .HasColumnName("title_id");
+            entity.Property(e => e.Name)
+                .HasComment("ชื่อเต็มของผู้ใช้งาน")
+                .HasColumnName("name");
+            entity.Property(e => e.Role)
+                .HasComment("บทบาทการใช้งาน (admin, staff, auditor)")
+                .HasColumnName("role");
+
+            entity.HasOne(d => d.Department).WithMany(p => p.Users)
+                .HasForeignKey(d => d.DepartmentId)
+                .HasConstraintName("users_department_id_fkey");
         });
-
-        modelBuilder.Entity<ResumeGradHis>(entity =>
-        {
-            entity.HasKey(e => e.GradHisId).HasName("resume_grad_his_pkey");
-
-            entity.ToTable("resume_grad_his", "resume", tb => tb.HasComment("เก็บข้อมูลประวัติการศึกษา"));
-
-            entity.Property(e => e.GradHisId)
-                .HasDefaultValueSql("nextval('resume.\"SEQ_GRAD_HIS\"'::regclass)")
-                .HasColumnName("grad_his_id");
-            entity.Property(e => e.AdmissionYear)
-                .HasMaxLength(8)
-                .HasComment("ปีที่เริ่มการศึกษา")
-                .HasColumnName("admission_year");
-            entity.Property(e => e.CollegeId)
-                .HasMaxLength(140)
-                .HasColumnName("college_id");
-            entity.Property(e => e.CountryGrad)
-                .HasMaxLength(6)
-                .HasComment("ประเทศที่จบการศึกษา")
-                .HasColumnName("country_grad");
-            entity.Property(e => e.CusPid)
-                .HasMaxLength(26)
-                .HasColumnName("cus_pid");
-            entity.Property(e => e.DegreeId)
-                .HasMaxLength(14)
-                .HasColumnName("degree_id");
-            entity.Property(e => e.Gpa)
-                .HasPrecision(6, 2)
-                .HasComment("เกรดเฉลี่ย")
-                .HasColumnName("gpa");
-            entity.Property(e => e.GradId)
-                .HasMaxLength(14)
-                .HasColumnName("grad_id");
-            entity.Property(e => e.GradNo)
-                .HasMaxLength(28)
-                .HasDefaultValueSql("'0'::character varying")
-                .HasColumnName("grad_no");
-            entity.Property(e => e.GraduateYear)
-                .HasMaxLength(8)
-                .HasComment("ปีที่จบการศึกษา")
-                .HasColumnName("graduate_year");
-            entity.Property(e => e.Honor)
-                .HasMaxLength(400)
-                .HasComment("เกียรตินิยม")
-                .HasColumnName("honor");
-            entity.Property(e => e.MajorId)
-                .HasMaxLength(10)
-                .HasColumnName("major_id");
-            entity.Property(e => e.Scholarship)
-                .HasMaxLength(2000)
-                .HasComment("ทุนการศึกษา")
-                .HasColumnName("scholarship");
-            entity.Property(e => e.UnivId)
-                .HasMaxLength(8)
-                .HasComment("รหัสมหาวิทยาลัย")
-                .HasColumnName("univ_id");
-        });
-        modelBuilder.HasSequence("announce_id_seq", "dss_person65")
-            .StartsAt(7L)
-            .HasMin(0L);
-        modelBuilder.HasSequence("c_seq", "central").StartsAt(21L);
-        modelBuilder.HasSequence("camp_id", "central");
-        modelBuilder.HasSequence("check_admin_id_seq", "dss_person65")
-            .StartsAt(7L)
-            .HasMin(0L);
-        modelBuilder.HasSequence("chess_saveid", "central");
-        modelBuilder.HasSequence("custid", "central").StartsAt(109L);
-        modelBuilder.HasSequence("evt_notify_seq", "central");
-        modelBuilder.HasSequence("evt_operators_seq", "central");
-        modelBuilder.HasSequence("evt_profile_seq", "central").StartsAt(21L);
-        modelBuilder.HasSequence("his_other_attatch_file_his_id_seq", "mou").HasMax(2147483647L);
-        modelBuilder.HasSequence("his_other_campus_his_id_seq", "mou").HasMax(2147483647L);
-        modelBuilder.HasSequence("his_other_contact_person_his_id_seq", "mou").HasMax(2147483647L);
-        modelBuilder.HasSequence("his_other_department_his_id_seq", "mou").HasMax(2147483647L);
-        modelBuilder.HasSequence("his_other_department_related_his_id_seq", "mou").HasMax(2147483647L);
-        modelBuilder.HasSequence("his_other_faculty_his_id_seq", "mou").HasMax(2147483647L);
-        modelBuilder.HasSequence("his_other_position_his_id_seq", "mou").HasMax(2147483647L);
-        modelBuilder.HasSequence("his_other_related_person_his_id_seq", "mou").HasMax(2147483647L);
-        modelBuilder.HasSequence("his_psu_caontact_person_his_id_seq", "mou").HasMax(2147483647L);
-        modelBuilder.HasSequence("his_psu_department_related_his_id_seq", "mou").HasMax(2147483647L);
-        modelBuilder.HasSequence("his_signed_activity_his_id_seq", "mou").HasMax(2147483647L);
-        modelBuilder.HasSequence("his_signed_detail_his_id_seq", "mou").HasMax(2147483647L);
-        modelBuilder.HasSequence("his_signed_project_his_id_seq", "mou").HasMax(2147483647L);
-        modelBuilder.HasSequence("his_university_his_id_seq", "mou").HasMax(2147483647L);
-        modelBuilder.HasSequence("l_addr_id_seq", "dss_person65")
-            .StartsAt(1363L)
-            .HasMin(0L);
-        modelBuilder.HasSequence("l_child_id_seq", "dss_person65")
-            .StartsAt(2187L)
-            .HasMin(0L);
-        modelBuilder.HasSequence("l_family_id_seq", "dss_person65")
-            .StartsAt(1450L)
-            .HasMin(0L);
-        modelBuilder.HasSequence("l_nw_id_seq", "dss_person65")
-            .StartsAt(3181L)
-            .HasMin(0L);
-        modelBuilder.HasSequence("l_profile_id_seq", "dss_person65")
-            .StartsAt(3L)
-            .HasMin(0L);
-        modelBuilder.HasSequence("l_pvd_id_seq", "dss_person65")
-            .StartsAt(1241L)
-            .HasMin(0L);
-        modelBuilder.HasSequence("l_staff_id_seq", "dss_person65")
-            .StartsAt(2478L)
-            .HasMin(0L);
-        modelBuilder.HasSequence("l_staff_work_id_seq", "dss_person65")
-            .StartsAt(810L)
-            .HasMin(0L);
-        modelBuilder.HasSequence("l_view_id_seq", "dss_person65")
-            .StartsAt(44761L)
-            .HasMin(0L);
-        modelBuilder.HasSequence("nx_job_id", "central").HasMin(500L);
-        modelBuilder.HasSequence("nx_lock_id", "central").HasMin(500L);
-        modelBuilder.HasSequence("nx_log_line_id", "central").HasMin(500L);
-        modelBuilder.HasSequence("nx_node_id", "central").HasMin(500L);
-        modelBuilder.HasSequence("nx_term_id", "central").HasMin(500L);
-        modelBuilder.HasSequence("nx_tree_id", "central").HasMin(500L);
-        modelBuilder.HasSequence("ordid", "central").StartsAt(622L);
-        modelBuilder.HasSequence("prodid", "central").StartsAt(200381L);
-        modelBuilder.HasSequence("resign_id_seq", "dss_person65")
-            .StartsAt(2L)
-            .HasMin(0L);
-        modelBuilder.HasSequence("SEQ_CHILD_DATA", "resume").HasMax(999999999999999999L);
-        modelBuilder.HasSequence("SEQ_CUS_ADDRESS", "resume").HasMax(999999999999999999L);
-        modelBuilder.HasSequence("SEQ_CUS_APPLY_ATTACH", "resume").HasMax(999999999999999999L);
-        modelBuilder.HasSequence("SEQ_FILE_ATTACH_REF", "resume")
-            .StartsAt(53099L)
-            .HasMin(0L)
-            .HasMax(999999999999999999L);
-        modelBuilder.HasSequence("SEQ_GRAD_HIS", "resume").HasMax(999999999999999999L);
-        modelBuilder.HasSequence("SEQ_JOB_APPLY", "resume").HasMax(999999999999999999L);
-        modelBuilder.HasSequence("SEQ_JOB_PUBLIC", "resume").HasMax(999999999999999999L);
-        modelBuilder.HasSequence("SEQ_JOB_VIEWER", "resume").HasMax(999999999999999999L);
-        modelBuilder.HasSequence("SEQ_lang_skill", "resume").HasMax(999999999999999999L);
-        modelBuilder.HasSequence("SEQ_LECT_ATT_REF", "resume")
-            .StartsAt(322L)
-            .HasMax(999999999999999999L);
-        modelBuilder.HasSequence("SEQ_LECT_GRAD_HIS", "resume")
-            .StartsAt(561L)
-            .HasMax(999999999999999999L);
-        modelBuilder.HasSequence("SEQ_LECT_PROFILE", "resume")
-            .StartsAt(272L)
-            .HasMax(999999999999999999L);
-        modelBuilder.HasSequence("SEQ_LECT_WORK_HIS", "resume")
-            .StartsAt(190L)
-            .HasMax(999999999999999999L);
-        modelBuilder.HasSequence("SEQ_OTHER_SKILL", "resume").HasMax(999999999999999999L);
-        modelBuilder.HasSequence("SEQ_PRIVACY_CONSENT", "resume").HasMax(999999999999999999L);
-        modelBuilder.HasSequence("SEQ_PUBLIC_ATTACH_REF", "resume").HasMax(9999999999999999L);
-        modelBuilder.HasSequence("seq_staff_notwork", "dss_person65")
-            .StartsAt(101520L)
-            .HasMin(0L);
-        modelBuilder.HasSequence("seq_staff_notwork_permit", "dss_person65")
-            .StartsAt(2270L)
-            .HasMin(0L);
-        modelBuilder.HasSequence("SEQ_WORK_HIS", "resume").HasMax(999999999999999999L);
-        modelBuilder.HasSequence("smp_job_id_", "central")
-            .HasMax(99999999L)
-            .IsCyclic();
-        modelBuilder.HasSequence("smp_service_seq", "central").StartsAt(16640L);
-        modelBuilder.HasSequence("sq_ds_change_id_dept", "central")
-            .StartsAt(949L)
-            .HasMin(0L);
-        modelBuilder.HasSequence("sq_ds_change_id_fac", "central").StartsAt(407L);
-        modelBuilder.HasSequence("sq_ds_delete_dept", "central")
-            .StartsAt(5L)
-            .HasMin(0L);
-        modelBuilder.HasSequence("sq_ds_delete_fac", "central").StartsAt(24L);
-        modelBuilder.HasSequence("sq_ds_move_dept", "central")
-            .StartsAt(6L)
-            .HasMin(0L);
-        modelBuilder.HasSequence("sq_ds_move_fac", "central").StartsAt(14L);
-        modelBuilder.HasSequence("sq_ds_new_dept", "central").StartsAt(1260L);
-        modelBuilder.HasSequence("sq_ds_new_fac", "central").StartsAt(614L);
-        modelBuilder.HasSequence("w_right_run_no_seq", "dss_person65");
-        modelBuilder.HasSequence("w_right_seq", "dss_person65")
-            .StartsAt(4996L)
-            .HasMin(0L);
 
         OnModelCreatingPartial(modelBuilder);
     }
