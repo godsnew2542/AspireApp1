@@ -1,0 +1,31 @@
+﻿<div class="row">
+    @if (TitleRender != null)
+    {
+        <div class="col-auto" style="padding:0 5px 0 12px;">
+            @TitleRender
+        </div>
+    }
+    @if (IsRequired)
+    {
+        <div class="col-auto" style="color:red; padding:0; font-size: 14px;">
+            *
+        </div>
+    }
+    @if (DescriptionRender != null)
+    {
+        <div class="col-auto" style="padding:0 5px 0 12px;">
+            @DescriptionRender
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public RenderFragment? TitleRender { get; set; } = null;
+
+    [Parameter]
+    public bool IsRequired { get; set; } = false;
+
+    [Parameter]
+    public RenderFragment? DescriptionRender { get; set; } = null;
+}

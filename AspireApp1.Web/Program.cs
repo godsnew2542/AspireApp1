@@ -1,7 +1,10 @@
 using AspireApp1.Web;
 using AspireApp1.Web.Components;
+using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddMudServices();
 
 // Add service defaults & Aspire client integrations.
 builder.AddServiceDefaults();

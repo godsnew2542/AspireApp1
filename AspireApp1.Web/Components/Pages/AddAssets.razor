@@ -1,0 +1,199 @@
+﻿@page "/addAssets"
+@using AspireApp1.Web.Components.Components.Design
+@using Model.Entity
+@using System.Globalization
+
+<PageTitle>เพิ่มข้อมูลครุภัณฑ์</PageTitle>
+
+<h1>เพิ่มข้อมูลครุภัณฑ์</h1>
+
+<MudContainer MaxWidth="MaxWidth.Large">
+    <MudForm @ref="form" @bind-IsValid="@success">
+        <MudGrid Spacing="2">
+            <MudItem xs="12">
+                <TextOnlyComponent IsRequired="true">
+                    <TitleRender>
+                        <div style="font-size: 16px; font-weight: 400;">
+                            สถานะ
+                        </div>
+                    </TitleRender>
+                </TextOnlyComponent>
+
+                <MudSelect @bind-Value="assets.Status"
+                           Margin="@Margin.Dense"
+                           Variant="Variant.Outlined"
+                           Placeholder="เลือกประเภทสถานะ"
+                           Clearable
+                           Required
+                           RequiredError="เลือกสถานะ">
+                    @foreach (var state in _states)
+                    {
+                        <MudSelectItem Value="@state">@state</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+            <MudItem xs="12">
+                <TextOnlyComponent IsRequired="true">
+                    <TitleRender>
+                        <div style="font-size: 16px; font-weight: 400;">
+                            ประเภทของครุภัณฑ์
+                        </div>
+                    </TitleRender>
+                </TextOnlyComponent>
+
+                <MudSelect @bind-Value="assets.Category"
+                           T="AssetCategories"
+                           Variant="@Variant.Outlined"
+                           ToStringFunc="@converterCategory"
+                           Placeholder="เลือกประเภทของครุภัณฑ์"
+                           Margin="@Margin.Dense"
+                           Clearable
+                           Required
+                           RequiredError="เลือกประเภทของครุภัณฑ์">
+                    @foreach (var item in categories)
+                    {
+                        <MudSelectItem Value="@item">
+                            @item.Name
+                        </MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+            <MudItem xs="12">
+                <TextOnlyComponent IsRequired="true">
+                    <TitleRender>
+                        <div style="font-size: 16px; font-weight: 400;">
+                            ชื่อครุภัณฑ์
+                        </div>
+                    </TitleRender>
+                </TextOnlyComponent>
+                <MudTextField @bind-Value="@assets.Name"
+                              T="string"
+                              Variant="Variant.Outlined"
+                              AutoGrow
+                              Placeholder="ชื่อครุภัณฑ์"
+                              Margin="@Margin.Dense"
+                              Clearable
+                              Required
+                              RequiredError="ชื่อครุภัณฑ์" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <TextOnlyComponent IsRequired="true">
+                    <TitleRender>
+                        <div style="font-size: 16px; font-weight: 400;">
+                            หมายเลขครุภัณฑ์
+                        </div>
+                    </TitleRender>
+                </TextOnlyComponent>
+                <MudTextField @bind-Value="@assets.AssetCode"
+                              T="string"
+                              Variant="Variant.Outlined"
+                              AutoGrow
+                              Placeholder="หมายเลขครุภัณฑ์"
+                              Margin="@Margin.Dense"
+                              Clearable
+                              Required
+                              RequiredError="หมายเลขครุภัณฑ์" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <TextOnlyComponent IsRequired="true">
+                    <TitleRender>
+                        <div style="font-size: 16px; font-weight: 400;">
+                            วันที่จัดซื้อ
+                        </div>
+                    </TitleRender>
+                </TextOnlyComponent>
+                <MudDatePicker @bind-Date="purchaseDate"
+                               DateFormat="dd MMMM yyyy"
+                               Variant="Variant.Outlined"
+                               Margin="Margin.Dense"
+                               Placeholder="วันที่จัดซื้อ"
+                               Culture="@CultureInfo.GetCultureInfo("th-TH")"
+                               Clearable
+                               Required
+                               RequiredError="วันที่จัดซื้อ" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <TextOnlyComponent IsRequired="true">
+                    <TitleRender>
+                        <div style="font-size: 16px; font-weight: 400;">
+                            หน่วยงาน/แผนก
+                        </div>
+                    </TitleRender>
+                </TextOnlyComponent>
+
+                <MudSelect @bind-Value="assets.Department"
+                           T="Departments"
+                           Variant="@Variant.Outlined"
+                           ToStringFunc="@converterDepartments"
+                           Placeholder="เลือกหน่วยงาน/แผนก"
+                           Margin="@Margin.Dense"
+                           Clearable
+                           Required
+                           RequiredError="เลือกหน่วยงาน/แผนก">
+                    @foreach (var item in departments)
+                    {
+                        <MudSelectItem Value="@item">
+                            @item.Name
+                        </MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+            <MudItem xs="12">
+                <TextOnlyComponent IsRequired="true">
+                    <TitleRender>
+                        <div style="font-size: 16px; font-weight: 400;">
+                            ผู้รับผิดชอบครุภัณฑ์
+                        </div>
+                    </TitleRender>
+                </TextOnlyComponent>
+
+                <MudSelect @bind-Value="assets.User"
+                           T="Users"
+                           Variant="@Variant.Outlined"
+                           ToStringFunc="@converterUser"
+                           Placeholder="เลือกผู้รับผิดชอบครุภัณฑ์"
+                           Margin="@Margin.Dense"
+                           Clearable
+                           Required
+                           RequiredError="เลือกผู้รับผิดชอบครุภัณฑ์">
+                    @foreach (var item in users)
+                    {
+                        <MudSelectItem Value="@item">
+                            @item.Name
+                        </MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+        </MudGrid>
+    </MudForm>
+
+    <div class="my-2">
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="onAddData">
+            บันทึก
+        </MudButton>
+    </div>
+</MudContainer>
+
+<div>
+    Status: @assets.Status <br />
+    Category: @assets.Category?.Id || @assets.Category?.Name <br />
+    Name: @assets.Name <br />
+    AssetCode: @assets.AssetCode <br />
+    Department: @assets.Department?.Id || @assets.Department?.Name <br />
+    User: @assets.User?.Id || @assets.User?.Name <br />
+
+
+    <hr />
+
+    purchaseDate: @purchaseDate <br />
+</div>
+
+@code {
+
+}

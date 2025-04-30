@@ -6,6 +6,103 @@ namespace AspireApp1.ApiService.Services;
 
 public class ConnectDbService(IDbContextFactory<DbModelContext> context) : IConnectDbService
 {
+
+    public async Task<Assets> AddAssets(Assets assets)
+    {
+        using var dbcontext = await context.CreateDbContextAsync();
+        using var trans = await dbcontext.Database.BeginTransactionAsync();
+
+        try
+        {
+            await dbcontext.Assets.AddRangeAsync(assets);
+            await dbcontext.SaveChangesAsync();
+            await trans.CommitAsync();
+            return assets;
+        }
+        catch (Exception)
+        {
+            await trans.RollbackAsync();
+            throw;
+        }
+    }
+
+    public async Task<List<Assets>> GetAllAssets()
+    {
+        using var dbcontext = await context.CreateDbContextAsync();
+
+        try
+        {
+            return await dbcontext.Assets.ToListAsync();
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+
+    public async Task<List<Assets>> GetFilterByTableAssets(string? status)
+    {
+        using var dbcontext = await context.CreateDbContextAsync();
+
+        try
+        {
+            IQueryable<Assets> query = dbcontext.Assets.OrderBy(x => x.Id);
+
+            if (!string.IsNullOrEmpty(status))
+            {
+                query = query.Where(x => x.Status == status);
+            }
+
+            return await query.ToListAsync();
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+
+    public async Task<List<AssetCategories>> GetAllCategories()
+    {
+        using var dbcontext = await context.CreateDbContextAsync();
+
+        try
+        {
+            return await dbcontext.AssetCategories.ToListAsync();
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+
+    public async Task<List<Departments>> GetAllDepartments()
+    {
+        using var dbcontext = await context.CreateDbContextAsync();
+
+        try
+        {
+            return await dbcontext.Departments.ToListAsync();
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+
+    public async Task<List<Users>> GetAllUsers()
+    {
+        using var dbcontext = await context.CreateDbContextAsync();
+
+        try
+        {
+            return await dbcontext.Users.ToListAsync();
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+
     //public async Task<List<ResumeCustomer>> GetAllResumeCustomer()
     //{
     //    using var dbcontext = await context.CreateDbContextAsync();
